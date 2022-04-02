@@ -14,3 +14,11 @@ Then you can run the bot. Don't forget to create .env file in the root folder wi
 
     python bot.py
 
+### Bot API description
+
+    start - Начало работы
+    needhelp - Вам нужна помощь
+    readytohelp - Вы хотите помочь
+    oncall - Начать сессию оператора
+    offcall - Закончить сессию оператора
+
