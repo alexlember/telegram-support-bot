@@ -1,10 +1,13 @@
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, KeyboardButton, ReplyKeyboardMarkup, \
-    ReplyKeyboardRemove
-from telegram.ext import Updater, CommandHandler, CallbackContext, CallbackQueryHandler, ConversationHandler, \
+from telegram import Update, KeyboardButton, ReplyKeyboardMarkup
+from telegram.ext import Updater, CommandHandler, CallbackContext, CallbackQueryHandler, \
     MessageHandler, Filters
 from settings import TELEGRAM_TOKEN, HELLO_MESSAGE, READY_TO_HELP_BTN_TXT, NEED_HELP_BTN_TXT, NEED_HELP_INFORMATION, \
     READY_TO_HELP_INFORMATION, CONNECT_TO_VOLUNTEER_INFORMATION, CONNECT_TO_VOLUNTEER_BTN_TXT, \
-    REPLY_TO_THIS_MESSAGE_TXT, WRONG_REPLY_TXT, SUPPORT_CHAT_ID
+    REPLY_TO_THIS_MESSAGE_TXT, WRONG_REPLY_TXT
+from storage import InMemSupportStorage
+
+
+storage = InMemSupportStorage()
 
 
 def start(update: Update, context: CallbackContext) -> None:
@@ -38,11 +41,18 @@ def button(update: Update, context: CallbackContext) -> None:
 
 
 def on_call(update: Update, context: CallbackContext) -> None:
-    update.message.reply_text(f'{update.effective_user.first_name}, you are on-call')
+    chat_id = update.message.chat_id
+    storage.add_chat(chat_id)
+    update.message.reply_text(f'the chat is on-call. Active chats: {storage.get_active_chats()}')
 
 
 def off_call(update: Update, context: CallbackContext) -> None:
-    update.message.reply_text(f'{update.effective_user.first_name}, you are off-call')
+    chat_id = update.message.chat_id
+    was_removed = storage.remove_chat(chat_id)
+    msg = 'The chat is off-call.'
+    if was_removed:
+        msg = "The chat is default and can't be removed from on-call."
+    update.message.reply_text(msg + f" Active chats: {storage.get_active_chats()}")
 
 
 def need_help(update: Update, context: CallbackContext) -> None:
@@ -55,11 +65,11 @@ def ready_to_help(update: Update, context: CallbackContext) -> None:
 
 def connect_with_operators(update: Update, context: CallbackContext) -> None:
     update.message.reply_text(CONNECT_TO_VOLUNTEER_INFORMATION)
-
+    user_id = update.message.from_user.id
+    chat_id = storage.next_chat_id(user_id)
     user_info = update.message.from_user.to_dict()
-
     context.bot.send_message(
-        chat_id=SUPPORT_CHAT_ID,
+        chat_id=chat_id,
         text=f"""
 📞 Connected {user_info}.
         """,
@@ -67,17 +77,20 @@ def connect_with_operators(update: Update, context: CallbackContext) -> None:
 
 
 def forward_to_support_chat(update, context):
+    user_id = update.message.from_user.id
+    chat_id = storage.next_chat_id(user_id)
 
-    forwarded = update.message.forward(chat_id=SUPPORT_CHAT_ID)
+    forwarded = update.message.forward(chat_id=chat_id)
     if not forwarded.forward_from:
         context.bot.send_message(
-            chat_id=SUPPORT_CHAT_ID,
+            chat_id=chat_id,
             reply_to_message_id=forwarded.message_id,
             text=f"{update.message.from_user.id}\n{REPLY_TO_THIS_MESSAGE_TXT}"
         )
 
 
 def forward_from_support_to_user(update, context):
+    chat_id = update.message.chat_id
     user_id = None
     if update.message.reply_to_message.forward_from:
         user_id = update.message.reply_to_message.forward_from.id
@@ -94,7 +107,7 @@ def forward_from_support_to_user(update, context):
         )
     else:
         context.bot.send_message(
-            chat_id=SUPPORT_CHAT_ID,
+            chat_id=chat_id,
             text=WRONG_REPLY_TXT
         )
 
@@ -114,7 +127,8 @@ updater.dispatcher.add_handler(CommandHandler('readytohelp', ready_to_help))
 updater.dispatcher.add_handler(CommandHandler('needhelp', need_help))
 
 updater.dispatcher.add_handler(MessageHandler(Filters.chat_type.private, forward_to_support_chat))
-updater.dispatcher.add_handler(MessageHandler(Filters.chat(SUPPORT_CHAT_ID) & Filters.reply, forward_from_support_to_user))
+updater.dispatcher.add_handler(MessageHandler(storage.get_chat_filter() & Filters.reply,
+                                              forward_from_support_to_user))
 
 
 updater.start_polling()
