@@ -11,6 +11,11 @@ SUPPORT_CHAT_ID = int(os.getenv("SUPPORT_CHAT_ID"))
 if SUPPORT_CHAT_ID is None:
     raise Exception("Please setup the .env variable SUPPORT_CHAT_ID.")
 
+PORT = int(os.environ.get('PORT', '8443'))
+HEROKU_APP_NAME = os.getenv("HEROKU_APP_NAME")
+
+LOGGING_CHAT_ID = os.getenv("LOGGING_CHAT_ID")
+
 CONNECT_WITH_OPERATORS_ENABLED = False
 
 HELLO_GENERAL_MESSAGE = """

@@ -73,7 +73,7 @@ class InMemSupportStorage(SupportStorageInterface, ABC):
         if chat_id == SUPPORT_CHAT_ID:
             return False
         self.group_filter.remove_chat_ids(chat_id)
-        self.active_chats.remove(chat_id)
+        self.active_chats.discard(chat_id)
         return True
 
     def link_user2chat(self, user_id: int, chat_id: int):
