@@ -50,4 +50,12 @@ Then you can run the bot. Don't forget to create .env file in the root folder wi
     to get the message history from the other support chat. 
     The only way is only to forward them manually but this is not convenient.
     
-    
+### How to deploy bot in Heroku
+
+    1) heroku login
+    2) heroku config - see env variables
+    3) heroku config:set REFUGEE_TELEGRAM_TOKEN=..... set env variables
+    (REFUGEE_TELEGRAM_TOKEN, LOGGING_CHAT_ID, SUPPORT_CHAT_ID, HEROKU_APP_NAME)
+    4) push to heroku/main to trigger app deploy
+
+
