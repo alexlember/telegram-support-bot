@@ -10,7 +10,7 @@ from ready_to_help import ready_to_help_menu
 from settings import TELEGRAM_TOKEN, HELLO_GENERAL_MESSAGE, READY_TO_HELP_BTN_TXT, NEED_HELP_BTN_TXT, \
     CONNECT_TO_VOLUNTEER_INFORMATION, CONNECT_TO_VOLUNTEER_BTN_TXT, \
     REPLY_TO_THIS_MESSAGE_TXT, WRONG_REPLY_TXT, CONNECT_WITH_OPERATORS_ENABLED, HELLO_CONNECT_MESSAGE, HEROKU_APP_NAME, \
-    PORT, LOGGING_CHAT_ID
+    PORT, get_logging_chat_id
 from storage import InMemSupportStorage
 
 logging.basicConfig(
@@ -121,18 +121,19 @@ def forward_from_support_to_user(update, context):
 
 def __log_info(msg, context):
     logger.info(msg)
-    __log(msg, context)
+    __log_to_chat(msg, context)
 
 
 def __log_warn(msg, context):
     logger.warning(msg)
-    __log(msg, context)
+    __log_to_chat(msg, context)
 
 
-def __log(msg, context):
-    if LOGGING_CHAT_ID is not None:
+def __log_to_chat(msg, context):
+    logging_chat = get_logging_chat_id()
+    if logging_chat is not None:
         context.bot.send_message(
-            chat_id=LOGGING_CHAT_ID,
+            chat_id=logging_chat,
             text=msg
         )
 

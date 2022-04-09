@@ -14,8 +14,6 @@ if SUPPORT_CHAT_ID is None:
 PORT = int(os.environ.get('PORT', '8443'))
 HEROKU_APP_NAME = os.getenv("HEROKU_APP_NAME")
 
-LOGGING_CHAT_ID = os.getenv("LOGGING_CHAT_ID")
-
 CONNECT_WITH_OPERATORS_ENABLED = False
 
 HELLO_GENERAL_MESSAGE = """
@@ -39,3 +37,7 @@ CONNECT_TO_VOLUNTEER_INFORMATION = """
 Убедительная просьба для начала изучить разделы "Хочу помочь" или "Мне нужна помощь",
 возможно там уже будет ответ на ваш вопрос. 
 """
+
+
+def get_logging_chat_id():
+    return os.getenv("LOGGING_CHAT_ID")
