@@ -1,11 +1,21 @@
+import logging
+
 from telegram import Update, KeyboardButton, ReplyKeyboardMarkup
 from telegram.ext import Updater, CommandHandler, CallbackContext, CallbackQueryHandler, \
     MessageHandler, Filters
-from settings import TELEGRAM_TOKEN, HELLO_MESSAGE, READY_TO_HELP_BTN_TXT, NEED_HELP_BTN_TXT, NEED_HELP_INFORMATION, \
-    READY_TO_HELP_INFORMATION, CONNECT_TO_VOLUNTEER_INFORMATION, CONNECT_TO_VOLUNTEER_BTN_TXT, \
-    REPLY_TO_THIS_MESSAGE_TXT, WRONG_REPLY_TXT
+
+from help_cmd_handler import handle_cmd_choice
+from need_help import need_help_menu
+from ready_to_help import ready_to_help_menu
+from settings import TELEGRAM_TOKEN, HELLO_GENERAL_MESSAGE, READY_TO_HELP_BTN_TXT, NEED_HELP_BTN_TXT, \
+    CONNECT_TO_VOLUNTEER_INFORMATION, CONNECT_TO_VOLUNTEER_BTN_TXT, \
+    REPLY_TO_THIS_MESSAGE_TXT, WRONG_REPLY_TXT, CONNECT_WITH_OPERATORS_ENABLED, HELLO_CONNECT_MESSAGE
 from storage import InMemSupportStorage
 
+logging.basicConfig(
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO
+)
+logger = logging.getLogger(__name__)
 
 storage = InMemSupportStorage()
 
@@ -16,34 +26,30 @@ def start(update: Update, context: CallbackContext) -> None:
         [
             KeyboardButton(READY_TO_HELP_BTN_TXT),
             KeyboardButton(NEED_HELP_BTN_TXT)
-        ],
-        [
-            KeyboardButton(CONNECT_TO_VOLUNTEER_BTN_TXT)
         ]
     ]
+
+    if CONNECT_WITH_OPERATORS_ENABLED:
+        keyboard.append([
+                KeyboardButton(CONNECT_TO_VOLUNTEER_BTN_TXT)
+            ]
+        )
 
     reply_markup = ReplyKeyboardMarkup(keyboard,
                                        one_time_keyboard=False,
                                        resize_keyboard=True)
 
-    update.message.reply_text(HELLO_MESSAGE, reply_markup=reply_markup)
+    msg = HELLO_GENERAL_MESSAGE + HELLO_CONNECT_MESSAGE if CONNECT_WITH_OPERATORS_ENABLED else HELLO_GENERAL_MESSAGE
+    update.message.reply_text(msg, reply_markup=reply_markup)
 
-
-def button(update: Update, context: CallbackContext) -> None:
-    """Parses the CallbackQuery and updates the message text."""
-    query = update.callback_query
-
-    # CallbackQueries need to be answered, even if no notification to the user is needed
-    # Some clients may have trouble otherwise. See https://core.telegram.org/bots/api#callbackquery
-    query.answer()
-
-    query.edit_message_text(text=f"Selected option: {query.data}")
+    logger.info(f'/start is called. user_id: {update.message.from_user.id}')
 
 
 def on_call(update: Update, context: CallbackContext) -> None:
     chat_id = update.message.chat_id
     storage.add_chat(chat_id)
     update.message.reply_text(f'the chat is on-call. Active chats: {storage.get_active_chats()}')
+    logger.info(f'/oncall is called. chat_id: {chat_id}')
 
 
 def off_call(update: Update, context: CallbackContext) -> None:
@@ -53,14 +59,7 @@ def off_call(update: Update, context: CallbackContext) -> None:
     if was_removed:
         msg = "The chat is default and can't be removed from on-call."
     update.message.reply_text(msg + f" Active chats: {storage.get_active_chats()}")
-
-
-def need_help(update: Update, context: CallbackContext) -> None:
-    update.message.reply_text(NEED_HELP_INFORMATION)
-
-
-def ready_to_help(update: Update, context: CallbackContext) -> None:
-    update.message.reply_text(READY_TO_HELP_INFORMATION)
+    logger.info(f'/offcall is called. chat_id: {chat_id}')
 
 
 def connect_with_operators(update: Update, context: CallbackContext) -> None:
@@ -74,6 +73,7 @@ def connect_with_operators(update: Update, context: CallbackContext) -> None:
 📞 Connected {user_info}.
         """,
     )
+    logger.info(f'/connect with operators is called. chat_id: {chat_id}, user_info: {user_info}')
 
 
 def forward_to_support_chat(update, context):
@@ -87,6 +87,9 @@ def forward_to_support_chat(update, context):
             reply_to_message_id=forwarded.message_id,
             text=f"{update.message.from_user.id}\n{REPLY_TO_THIS_MESSAGE_TXT}"
         )
+        logger.info(f'/forward_to_support_chat is called (forbidden forward). chat_id: {chat_id}, user_id: {user_id}')
+    else:
+        logger.info(f'/forward_to_support_chat is called. chat_id: {chat_id}, user_id: {user_id}')
 
 
 def forward_from_support_to_user(update, context):
@@ -105,30 +108,32 @@ def forward_from_support_to_user(update, context):
             chat_id=user_id,
             from_chat_id=update.message.chat_id
         )
+        logger.info(f'/forward_from_support_to_user is called. chat_id: {chat_id}, user_id: {user_id}')
     else:
         context.bot.send_message(
             chat_id=chat_id,
             text=WRONG_REPLY_TXT
         )
+        logger.warning(f"/forward_from_support_to_user is called. Can't find user_id for chat_id: {chat_id}")
 
 
 updater = Updater(TELEGRAM_TOKEN)
 
 
-updater.dispatcher.add_handler(CallbackQueryHandler(button))
+updater.dispatcher.add_handler(CallbackQueryHandler(handle_cmd_choice))
 updater.dispatcher.add_handler(CommandHandler('start', start))
-updater.dispatcher.add_handler(MessageHandler(Filters.regex('^(' + NEED_HELP_BTN_TXT + ')$'), need_help))
-updater.dispatcher.add_handler(MessageHandler(Filters.regex('^(' + READY_TO_HELP_BTN_TXT + ')$'), ready_to_help))
-updater.dispatcher.add_handler(MessageHandler(Filters.regex('^(' + CONNECT_TO_VOLUNTEER_BTN_TXT + ')$'),
-                                              connect_with_operators))
-updater.dispatcher.add_handler(CommandHandler('oncall', on_call))
-updater.dispatcher.add_handler(CommandHandler('offcall', off_call))
-updater.dispatcher.add_handler(CommandHandler('readytohelp', ready_to_help))
-updater.dispatcher.add_handler(CommandHandler('needhelp', need_help))
+updater.dispatcher.add_handler(MessageHandler(Filters.regex('^(' + NEED_HELP_BTN_TXT + ')$'), need_help_menu))
+updater.dispatcher.add_handler(MessageHandler(Filters.regex('^(' + READY_TO_HELP_BTN_TXT + ')$'), ready_to_help_menu))
 
-updater.dispatcher.add_handler(MessageHandler(Filters.chat_type.private, forward_to_support_chat))
-updater.dispatcher.add_handler(MessageHandler(storage.get_chat_filter() & Filters.reply,
-                                              forward_from_support_to_user))
+if CONNECT_WITH_OPERATORS_ENABLED:
+    updater.dispatcher.add_handler(MessageHandler(Filters.regex('^(' + CONNECT_TO_VOLUNTEER_BTN_TXT + ')$'),
+                                                  connect_with_operators))
+    updater.dispatcher.add_handler(CommandHandler('oncall', on_call))
+    updater.dispatcher.add_handler(CommandHandler('offcall', off_call))
+
+    updater.dispatcher.add_handler(MessageHandler(Filters.chat_type.private, forward_to_support_chat))
+    updater.dispatcher.add_handler(MessageHandler(storage.get_chat_filter() & Filters.reply,
+                                                  forward_from_support_to_user))
 
 
 updater.start_polling()
