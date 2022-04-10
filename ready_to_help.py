@@ -9,8 +9,12 @@ def ready_to_help_menu(update: Update, context: CallbackContext) -> None:
 def create_ready_to_help_reply_markup() -> InlineKeyboardMarkup:
     keyboard = [
         [
-            InlineKeyboardButton("Пожертвовать", callback_data='ready_to_help_donate'),
-            InlineKeyboardButton("Помочь физически", callback_data='ready_to_help_physically'),
+            InlineKeyboardButton("Пожертвовать", callback_data='ready_to_help_donate')
+        ],
+        [
+            InlineKeyboardButton("Помочь физически", callback_data='ready_to_help_physically')
+        ],
+        [
             InlineKeyboardButton("Поддержать морально", callback_data='ready_to_help_socially')
         ]
     ]
@@ -19,12 +23,11 @@ def create_ready_to_help_reply_markup() -> InlineKeyboardMarkup:
 
 READY_TO_HELP_DONATE_INFORMATION = """
 1) Отправить донат гуманитарным организациям, работающим в Украине.
-https://nuforum.se/help-ukraine/donation/intern_help
+https://nuforum.se/Donation/donation/
 
 2) Сбор гуманитарной помощи для отправки в Украину.
 Адрес: Sveavägen 162 
 Понедельник - суббота 9.00-12.00.
-https://nuforum.se/help-ukraine/supplies
 https://www.facebook.com/uavhub.stockholm/
 
 3) Паляниця, гуманитарный склад для беженцев.

@@ -9,17 +9,27 @@ def need_help_menu(update: Update, context: CallbackContext) -> None:
 def create_need_help_reply_markup() -> InlineKeyboardMarkup:
     keyboard = [
         [
-            InlineKeyboardButton("Где искать помощь?", callback_data='need_help_where_to_search'),
-            InlineKeyboardButton("Статус переселенца", callback_data='need_help_refugee_status'),
+            InlineKeyboardButton("Где искать помощь?", callback_data='need_help_where_to_search')
+        ],
+        [
+            InlineKeyboardButton("Статус переселенца", callback_data='need_help_refugee_status')
+        ],
+        [
             InlineKeyboardButton("Жизнь в Швеции", callback_data='need_help_life_in_swe')
         ],
         [
-            InlineKeyboardButton("Встретиться с людьми", callback_data='need_help_meet_people'),
-            InlineKeyboardButton("Язык", callback_data='need_help_language'),
-            InlineKeyboardButton("Найти жилье", callback_data='need_help_find_accommodation'),
+            InlineKeyboardButton("Встретиться с людьми", callback_data='need_help_meet_people')
         ],
         [
-            InlineKeyboardButton("Интеграция, обучение", callback_data='need_help_integration_education'),
+            InlineKeyboardButton("Язык", callback_data='need_help_language')
+        ],
+        [
+            InlineKeyboardButton("Найти жилье", callback_data='need_help_find_accommodation')
+        ],
+        [
+            InlineKeyboardButton("Интеграция, обучение", callback_data='need_help_integration_education')
+        ],
+        [
             InlineKeyboardButton("Бесплатные возможности", callback_data='need_help_free_options')
         ]
     ]
@@ -54,7 +64,7 @@ NEED_HELP_INFORMATION_REFUGEE_STATUS = """
 https://docs.google.com/document/d/1NoKq7FPVTGlosZ5VWCZCZrDWXb0KGMeyZKazbv-2pqU/edit 
 
 Официальная информация от Migrationsverket о подаче на статус беженца 
-https://www.migrationsverket.se/download/18.6b4387bd17dc72a99251189/1646813584273/Infoblad%20till%20dig%20som%20s%C3%B6ker%20tillf%C3%A4lligt%20skydd%20UKRAINSKA.pdf
+https://www.migrationsverket.se/Other-languages/Russkij/Zasita-na-osnovanii-Direktivy-o-vremennoj-zasite-v-slucae-massovogo-pritoka-peremesennyh-lic.html
 
 Видео юриста о регистрации украинских беженцев онлайн на сайте миграционки 
 https://www.youtube.com/watch?v=NXunT_vo-xQ
@@ -96,7 +106,7 @@ https://www.facebook.com/groups/3080911452150836/
 🕺🏼12:00-19:00 – Various activities for children and adults
 
 - Центр для украинских беженцев
-https://m.facebook.com/ukrainianinsweden/
+https://www.facebook.com/ukrainianinsweden/
 Södra Hamnvägen 9, 15 минут от станции Slussen на автобусе. Туда можно прийти в понедельник - четверг с 10 до 13 
 и получить информационную поддержку от волонтеров, попить кофе и чай. Также можно организовывать там свои мероприятия.
 
@@ -113,12 +123,16 @@ NEED_HELP_INFORMATION_FIND_ACCOMMODATION = """
 Будьте осторожны и бдительны, есть люди, которые могут воспользоваться положением беженцев в свои целях.
 - Ukrainian refugees in Sweden- Accommodation, Help & Shelter - поиск жилья в Швеции
 https://www.facebook.com/groups/682101599891991/
+
 - Öppna din dörr för Ukraina
 https://www.facebook.com/groups/343051644412157/ 
+
 - Living Room for Displaced People - HUS: Help Ukraine Stockholm
-https://www.facebook.com/HelpUkraineinStockholm/
+https://www.facebook.com/CenterForDisplacedUkrainians/
+
 - Hjälp Ukrainas flyktingar
 https://www.facebook.com/groups/1123608588415187/
+
 - Найти временное жилье в Швеции
 https://www.tryggstartisverige.se/
 """
