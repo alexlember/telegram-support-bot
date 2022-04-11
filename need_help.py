@@ -15,34 +15,30 @@ def create_need_help_reply_markup() -> InlineKeyboardMarkup:
             InlineKeyboardButton("Статус переселенца", callback_data='need_help_refugee_status')
         ],
         [
-            InlineKeyboardButton("Жизнь в Швеции", callback_data='need_help_life_in_swe')
-        ],
-        [
-            InlineKeyboardButton("Встретиться с людьми", callback_data='need_help_meet_people')
-        ],
-        [
-            InlineKeyboardButton("Язык", callback_data='need_help_language')
+            InlineKeyboardButton("Как добраться до Швеции?", callback_data='need_help_how_to_get_to_swe')
         ],
         [
             InlineKeyboardButton("Найти жилье", callback_data='need_help_find_accommodation')
         ],
         [
-            InlineKeyboardButton("Интеграция, обучение", callback_data='need_help_integration_education')
-        ],
-        [
-            InlineKeyboardButton("Бесплатные возможности", callback_data='need_help_free_options')
-        ],
-        [
             InlineKeyboardButton("Медицина", callback_data='need_help_medicine')
         ],
         [
-            InlineKeyboardButton("Психологическая помощь", callback_data='need_help_psychological')
+            InlineKeyboardButton("Жизнь в 🇸🇪", callback_data='need_help_life_in_swe'),
+            InlineKeyboardButton("Встречи с людьми", callback_data='need_help_meet_people')
         ],
         [
-            InlineKeyboardButton("Как добраться до Швеции?", callback_data='need_help_how_to_get_to_swe')
+            InlineKeyboardButton("Язык", callback_data='need_help_language'),
+            InlineKeyboardButton("Обучение", callback_data='need_help_integration_education')
         ],
         [
             InlineKeyboardButton("Транспорт", callback_data='need_help_transport')
+        ],
+        [
+            InlineKeyboardButton("Досуг/спорт", callback_data='need_help_free_options')
+        ],
+        [
+            InlineKeyboardButton("Психологическая помощь", callback_data='need_help_psychological')
         ]
     ]
     return InlineKeyboardMarkup(keyboard)
@@ -70,7 +66,6 @@ https://www.helpukrainegbg.se/
 https://www.facebook.com/groups/helpukraineingbg/permalink/363700915754779/
 """
 
-
 NEED_HELP_INFORMATION_REFUGEE_STATUS = """
 Памятка, которую раздают у миграционного агентства
 https://docs.google.com/document/d/1NoKq7FPVTGlosZ5VWCZCZrDWXb0KGMeyZKazbv-2pqU/edit 
@@ -81,7 +76,6 @@ https://www.migrationsverket.se/Other-languages/Russkij/Zasita-na-osnovanii-Dire
 Видео юриста о регистрации украинских беженцев онлайн на сайте миграционки 
 https://www.youtube.com/watch?v=NXunT_vo-xQ
 """
-
 
 NEED_HELP_INFORMATION_LIFE_IN_SWEDEN = """
 Различные памятки на украинском языке о разных аспектах жизни в Швеции
@@ -170,7 +164,6 @@ https://www.facebook.com/events/410034800927820/?ref=newsfeed
 
 """
 
-
 NEED_HELP_INFORMATION_FREE_OPTIONS = """
 
 - Бесплатный вход в Скансен для всех с украинским паспортом 
@@ -246,7 +239,6 @@ Aylin Wallin
 Желательно говорить по-английски хотя бы на базовом уровне.
 """
 
-
 NEED_HELP_INFORMATION_MEDICINE = """
 1) Вебинар для беженцев из Украины "Как устроена медицинская система в Швеции"
 https://www.youtube.com/watch?v=aH95Zg4IE9A
@@ -263,7 +255,6 @@ NEED_HELP_INFORMATION_PSYCHOLOGICAL = """
 t.me/Psy_for_peace_bot
 """
 
-
 NEED_HELP_INFORMATION_TRANSPORT = """
 1) По Швеции
 Бесплатный транспорт поездами SJ. 
@@ -275,7 +266,6 @@ NEED_HELP_INFORMATION_TRANSPORT = """
 Мальме: местный перевозчик Skånetrafiken - паспорт или ID = бесплатный билет в регионе Skåne,
 Гётеборг: местный перевозчик Västtrafik распределяет бесплатные билеты через Migrationsverket.
 """
-
 
 NEED_HELP_INFORMATION_HOW_TO_GET_TO_SWEDEN = """
 Чат в Telegram для тех, кто уезжает из Украины или находится в Украине и нуждается в помощи: 
@@ -307,9 +297,6 @@ https://www.stenaline.se/information-om-konflikten-i-ukraina
 - Поезд до Gdynia https://rozklad-pkp.pl/ua
 - Бесплатный паром Stena line (Gdynia - Karlskrona)
 https://www.stenaline.se/information-om-konflikten-i-ukraina
-
-- Автобусами с помощью организации Carebridge 
-https://carebridge.help/uk/home-ua/
 
 5) Финляндия
 - Бесплатный проезд на пароме Viking line (Turku - Stockholm) - 

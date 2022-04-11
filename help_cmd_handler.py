@@ -29,7 +29,7 @@ def handle_cmd_choice(update: Update, context: CallbackContext) -> None:
     elif query.data == 'need_help_integration_education':
         __send_msg_no_preview_need_help(query.message, 'Бесплатные курсы и возможности для интеграции: ' + NEED_HELP_INFORMATION_EDUCATION_INTEGRATION)
     elif query.data == 'need_help_free_options':
-        __send_msg_no_preview_need_help(query.message, 'Другие бесплатные возможности: ' + NEED_HELP_INFORMATION_FREE_OPTIONS)
+        __send_msg_no_preview_need_help(query.message, 'Досуг/спорт: ' + NEED_HELP_INFORMATION_FREE_OPTIONS)
     elif query.data == 'need_help_medicine':
         __send_msg_no_preview_need_help(query.message, 'Медицина: ' + NEED_HELP_INFORMATION_MEDICINE)
     elif query.data == 'need_help_psychological':
