@@ -5,9 +5,11 @@ from need_help import create_need_help_reply_markup, NEED_HELP_INFORMATION_WHERE
     NEED_HELP_INFORMATION_REFUGEE_STATUS, NEED_HELP_INFORMATION_LIFE_IN_SWEDEN, NEED_HELP_INFORMATION_MEET_PEOPLE, \
     NEED_HELP_INFORMATION_FIND_ACCOMMODATION, NEED_HELP_INFORMATION_LANGUAGE, NEED_HELP_INFORMATION_FREE_OPTIONS, \
     NEED_HELP_INFORMATION_EDUCATION_INTEGRATION, NEED_HELP_INFORMATION_MEDICINE, NEED_HELP_INFORMATION_PSYCHOLOGICAL, \
-    NEED_HELP_INFORMATION_TRANSPORT, NEED_HELP_INFORMATION_HOW_TO_GET_TO_SWEDEN
+    NEED_HELP_INFORMATION_TRANSPORT, NEED_HELP_INFORMATION_HOW_TO_GET_TO_SWEDEN, need_help_menu, \
+    create_back_to_need_help_reply_markup, send_reply_need_help_menu
 from ready_to_help import create_ready_to_help_reply_markup, READY_TO_HELP_DONATE_INFORMATION, \
-    READY_TO_HELP_PHYSICALLY_INFORMATION, READY_TO_HELP_SOCIALLY_INFORMATION
+    READY_TO_HELP_PHYSICALLY_INFORMATION, READY_TO_HELP_SOCIALLY_INFORMATION, ready_to_help_menu, \
+    create_back_to_ready_to_help_reply_markup, send_reply_ready_to_help_menu
 
 
 def handle_cmd_choice(update: Update, context: CallbackContext) -> None:
@@ -46,13 +48,18 @@ def handle_cmd_choice(update: Update, context: CallbackContext) -> None:
     elif query.data == 'ready_to_help_socially':
         __send_msg_no_preview_ready_to_help(query.message, 'Варианты социальной помощи: ' + READY_TO_HELP_SOCIALLY_INFORMATION)
 
+    elif query.data == 'back_to_need_help':
+        send_reply_need_help_menu(query.message)
+    elif query.data == 'back_to_ready_to_help':
+        send_reply_ready_to_help_menu(query.message)
+
 
 def __send_msg_no_preview_ready_to_help(query_message, text):
-    __send_msg_no_preview(query_message, text, create_ready_to_help_reply_markup())
+    __send_msg_no_preview(query_message, text, create_back_to_ready_to_help_reply_markup())
 
 
 def __send_msg_no_preview_need_help(query_message, text):
-    __send_msg_no_preview(query_message, text, create_need_help_reply_markup())
+    __send_msg_no_preview(query_message, text, create_back_to_need_help_reply_markup())
 
 
 def __send_msg_no_preview(query_message, text, reply_markup):
@@ -61,4 +68,5 @@ def __send_msg_no_preview(query_message, text, reply_markup):
         reply_markup=reply_markup,
         disable_web_page_preview=True
     )
+
 
