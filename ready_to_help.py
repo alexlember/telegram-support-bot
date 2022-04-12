@@ -3,7 +3,11 @@ from telegram.ext import CallbackContext
 
 
 def ready_to_help_menu(update: Update, context: CallbackContext) -> None:
-    update.message.reply_text('Как вы хотите помочь?', reply_markup=create_ready_to_help_reply_markup())
+    send_reply_ready_to_help_menu(update.message)
+
+
+def send_reply_ready_to_help_menu(message) -> None:
+    message.reply_text('Как вы хотите помочь?', reply_markup=create_ready_to_help_reply_markup())
 
 
 def create_ready_to_help_reply_markup() -> InlineKeyboardMarkup:
@@ -16,6 +20,15 @@ def create_ready_to_help_reply_markup() -> InlineKeyboardMarkup:
         ],
         [
             InlineKeyboardButton("Поддержать морально", callback_data='ready_to_help_socially')
+        ]
+    ]
+    return InlineKeyboardMarkup(keyboard)
+
+
+def create_back_to_ready_to_help_reply_markup() -> InlineKeyboardMarkup:
+    keyboard = [
+        [
+            InlineKeyboardButton("Назад", callback_data='back_to_ready_to_help')
         ]
     ]
     return InlineKeyboardMarkup(keyboard)

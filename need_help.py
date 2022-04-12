@@ -3,7 +3,11 @@ from telegram.ext import CallbackContext
 
 
 def need_help_menu(update: Update, context: CallbackContext) -> None:
-    update.message.reply_text('Какая помощь вам необходима?', reply_markup=create_need_help_reply_markup())
+    send_reply_need_help_menu(update.message)
+
+
+def send_reply_need_help_menu(message) -> None:
+    message.reply_text('Какая помощь вам необходима?', reply_markup=create_need_help_reply_markup())
 
 
 def create_need_help_reply_markup() -> InlineKeyboardMarkup:
@@ -39,6 +43,15 @@ def create_need_help_reply_markup() -> InlineKeyboardMarkup:
         ],
         [
             InlineKeyboardButton("Психологическая помощь", callback_data='need_help_psychological')
+        ]
+    ]
+    return InlineKeyboardMarkup(keyboard)
+
+
+def create_back_to_need_help_reply_markup() -> InlineKeyboardMarkup:
+    keyboard = [
+        [
+            InlineKeyboardButton("Назад", callback_data='back_to_need_help')
         ]
     ]
     return InlineKeyboardMarkup(keyboard)
@@ -278,28 +291,29 @@ https://t.me/helpingtoleave_bot
 Cобирают заявки по транспорту в Швецию для украинских беженцев
 https://www.facebook.com/groups/703206627465375/about
 
-1) Германия
+1) Из Германии
 - Поезд по Германии по бесплатному билету "helpukraine" 
 https://www.bahn.de/info/helpukraine
 
 - Бесплатный паром Stena line (Kiel - Göteborg, Rostock - Trelleborg) 
 https://www.stenaline.se/information-om-konflikten-i-ukraina
 
-2) Дания
+2) Из Дании
 Бесплатный паром Stena line (Frederikshavn - Göteborg, Grenaa - Halmstad)
 https://www.stenaline.se/information-om-konflikten-i-ukraina
 
-3) Латвия
+3) Из Латвии
 Бесплатный паром Stena line (Ventspils - Nynäshamn)
 https://www.stenaline.se/information-om-konflikten-i-ukraina
 
-4) Польша
+4) Из Польши
 - Поезд до Gdynia https://rozklad-pkp.pl/ua
 - Бесплатный паром Stena line (Gdynia - Karlskrona)
 https://www.stenaline.se/information-om-konflikten-i-ukraina
 
-5) Финляндия
-- Бесплатный проезд на пароме Viking line (Turku - Stockholm) - 
+5) Из Финляндии
+- Бесплатный проезд на пароме Viking line (Turku - Stockholm)
+При бронировании нужно указать код UKRAIN2
 https://www.hbl.fi/artikel/viking-line-flyktingar-fran-ukraina-aker-gratis/
 
 - Бесплатный проезд на пароме Stena line (Hanko - Nynäshamn)
