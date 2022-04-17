@@ -59,3 +59,21 @@ Then you can run the bot. Don't forget to create .env file in the root folder wi
     4) push to heroku/main to trigger app deploy
 
 
+### How to deploy bot in AWS
+
+    1) docker, docker-compose, git should be installed in AWS.
+    2) choose the right branch in git
+    3) make sure you have proper settings in 
+    postgres_env_vars.env and telegram_env_vars files
+    4) ./docker-compose build
+    5) ./docker-compose up -d
+    ---
+    What should happen?
+    1st time run:
+    - pretty long duration of ./docker-compose build (need to fetch required images ~2GB),
+    this would take time.
+    - 2 containers should be running (postgres and telegram bot)
+    
+    If you do update of the telegram bot, build will take several seconds only.
+    The postgres container won't even be re-created it would keep running.
+    ---

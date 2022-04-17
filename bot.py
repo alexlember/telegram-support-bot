@@ -9,16 +9,16 @@ from need_help import need_help_menu
 from ready_to_help import ready_to_help_menu
 from settings import TELEGRAM_TOKEN, HELLO_GENERAL_MESSAGE, READY_TO_HELP_BTN_TXT, NEED_HELP_BTN_TXT, \
     CONNECT_TO_VOLUNTEER_INFORMATION, CONNECT_TO_VOLUNTEER_BTN_TXT, \
-    REPLY_TO_THIS_MESSAGE_TXT, WRONG_REPLY_TXT, CONNECT_WITH_OPERATORS_ENABLED, HELLO_CONNECT_MESSAGE, HEROKU_APP_NAME, \
-    PORT, get_logging_chat_id
-from storage import InMemSupportStorage
+    REPLY_TO_THIS_MESSAGE_TXT, WRONG_REPLY_TXT, CONNECT_WITH_OPERATORS_ENABLED, HELLO_CONNECT_MESSAGE, \
+    get_logging_chat_id, SUPPORT_CHAT_ID
+from storage import InMemSupportStorage, PostgresSupportStorage
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO
 )
 logger = logging.getLogger(__name__)
 
-storage = InMemSupportStorage()
+storage = PostgresSupportStorage()
 
 
 def start(update: Update, context: CallbackContext) -> None:
@@ -44,24 +44,30 @@ def start(update: Update, context: CallbackContext) -> None:
     msg = HELLO_GENERAL_MESSAGE + HELLO_CONNECT_MESSAGE if CONNECT_WITH_OPERATORS_ENABLED else HELLO_GENERAL_MESSAGE
     update.message.reply_text(msg, reply_markup=reply_markup)
 
-    __log_info(f'/start is called. user_id: {update.message.from_user.id}', context)
+    user_id = update.message.from_user.id
+    storage.insert_user_action(user_id, None, "/start")
+    __log_info(f'/start is called. user_id: {user_id}', user_id, None, context)
 
 
 def on_call(update: Update, context: CallbackContext) -> None:
     chat_id = update.message.chat_id
+    user_id = update.message.from_user.id
     storage.add_chat(chat_id)
+    storage.insert_user_action(user_id, chat_id, "/on-call")
     update.message.reply_text(f'the chat is on-call. Active chats: {storage.get_active_chats()}')
-    __log_info(f'/oncall is called. chat_id: {chat_id}', context)
+    __log_info(f'/oncall is called. chat_id: {chat_id}', user_id, chat_id, context)
 
 
 def off_call(update: Update, context: CallbackContext) -> None:
     chat_id = update.message.chat_id
+    user_id = update.message.from_user.id
     was_removed = storage.remove_chat(chat_id)
     msg = 'The chat is off-call.'
     if not was_removed:
         msg = "The chat is default and can't be removed from on-call."
+    storage.insert_user_action(user_id, chat_id, "/off-call")
     update.message.reply_text(msg + f" Active chats: {storage.get_active_chats()}")
-    __log_info(f'/offcall is called. chat_id: {chat_id}', context)
+    __log_info(f'/offcall is called. chat_id: {chat_id}', user_id, chat_id, context)
 
 
 def connect_with_operators(update: Update, context: CallbackContext) -> None:
@@ -69,13 +75,15 @@ def connect_with_operators(update: Update, context: CallbackContext) -> None:
     user_id = update.message.from_user.id
     chat_id = storage.next_chat_id(user_id)
     user_info = update.message.from_user.to_dict()
+    storage.insert_user_action(user_id, chat_id, "/connect with operators")
+    __log_info(f'/connect with operators is called. chat_id: {chat_id}, user_info: {user_info}',
+               user_id, chat_id, context)
     context.bot.send_message(
         chat_id=chat_id,
         text=f"""
 📞 Connected {user_info}.
         """,
     )
-    __log_info(f'/connect with operators is called. chat_id: {chat_id}, user_info: {user_info}', context)
 
 
 def forward_to_support_chat(update, context):
@@ -89,14 +97,19 @@ def forward_to_support_chat(update, context):
             reply_to_message_id=forwarded.message_id,
             text=f"{update.message.from_user.id}\n{REPLY_TO_THIS_MESSAGE_TXT}"
         )
-        __log_info(f'/forward_to_support_chat is called (forbidden forward). chat_id: {chat_id}, user_id: {user_id}', context)
+        storage.insert_user_action(user_id, chat_id, "/forward_to_support_chat (forbidden forward)")
+        __log_info(f'/forward_to_support_chat is called (forbidden forward). chat_id: {chat_id}, user_id: {user_id}',
+                   user_id, chat_id, context)
     else:
-        __log_info(f'/forward_to_support_chat is called. chat_id: {chat_id}, user_id: {user_id}', context)
+        storage.insert_user_action(user_id, chat_id, "/forward_to_support_chat")
+        __log_info(f'/forward_to_support_chat is called. chat_id: {chat_id}, user_id: {user_id}',
+                   user_id, chat_id, context)
 
 
 def forward_from_support_to_user(update, context):
     chat_id = update.message.chat_id
     user_id = None
+    from_user = update.message.from_user.id
     if update.message.reply_to_message.forward_from:
         user_id = update.message.reply_to_message.forward_from.id
     elif REPLY_TO_THIS_MESSAGE_TXT in update.message.reply_to_message.text:
@@ -110,22 +123,28 @@ def forward_from_support_to_user(update, context):
             chat_id=user_id,
             from_chat_id=update.message.chat_id
         )
-        __log_info(f'/forward_from_support_to_user is called. chat_id: {chat_id}, user_id: {user_id}', context)
+        storage.insert_user_action(from_user, chat_id, f"/forward_from_support_to_user to user_id: {user_id}")
+        __log_info(f'/forward_from_support_to_user is called. chat_id: {chat_id}, from user: {from_user} '
+                   f'to user_id: {user_id}', from_user, chat_id, context)
     else:
         context.bot.send_message(
             chat_id=chat_id,
             text=WRONG_REPLY_TXT
         )
-        __log_warn(f"/forward_from_support_to_user is called. Can't find user_id for chat_id: {chat_id}", context)
+        storage.insert_user_action(from_user, chat_id, f"/forward_from_support_to_user (user find error) to user_id: {user_id}")
+        __log_warn(f"/forward_from_support_to_user is called. From user: {from_user}. Can't find user_id {from_user} for chat_id: {chat_id}",
+                   from_user, chat_id, context)
 
 
-def __log_info(msg, context):
+def __log_info(msg, user_id, chat_id, context):
     logger.info(msg)
+    storage.insert_logging_event("info", user_id, chat_id, msg)
     __log_to_chat(msg, context)
 
 
-def __log_warn(msg, context):
+def __log_warn(msg, user_id, chat_id, context):
     logger.warning(msg)
+    storage.insert_logging_event("warn", user_id, chat_id, msg)
     __log_to_chat(msg, context)
 
 
@@ -155,21 +174,24 @@ if CONNECT_WITH_OPERATORS_ENABLED:
     updater.dispatcher.add_handler(MessageHandler(storage.get_chat_filter() & Filters.reply,
                                                   forward_from_support_to_user))
 
+
+storage.init_db()
+storage.add_chat(SUPPORT_CHAT_ID)
+
 # Run bot
-if HEROKU_APP_NAME is None:  # pooling mode
+# if HEROKU_APP_NAME is None:  # pooling mode
 
-    logger.info("Can't detect 'HEROKU_APP_NAME' env. Running bot in pooling mode.")
+logger.info("Can't detect 'HEROKU_APP_NAME' env. Running bot in pooling mode.")
+updater.start_polling()
 
-    updater.start_polling()
-
-else:  # webhook mode
-    logger.info("Running bot in webhook mode. Make sure that this url is correct: "
-                f"https://{HEROKU_APP_NAME}.herokuapp.com/")
-    updater.start_webhook(
-        listen="0.0.0.0",
-        port=PORT,
-        url_path=TELEGRAM_TOKEN,
-        webhook_url=f"https://{HEROKU_APP_NAME}.herokuapp.com/{TELEGRAM_TOKEN}"
-    )
+# else:  # webhook mode
+#     logger.info("Running bot in webhook mode. Make sure that this url is correct: "
+#                 f"https://{HEROKU_APP_NAME}.herokuapp.com/")
+#     updater.start_webhook(
+#         listen="0.0.0.0",
+#         port=PORT,
+#         url_path=TELEGRAM_TOKEN,
+#         webhook_url=f"https://{HEROKU_APP_NAME}.herokuapp.com/{TELEGRAM_TOKEN}"
+#     )
 
 updater.idle()

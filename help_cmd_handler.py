@@ -10,11 +10,17 @@ from need_help import create_need_help_reply_markup, NEED_HELP_INFORMATION_WHERE
 from ready_to_help import create_ready_to_help_reply_markup, READY_TO_HELP_DONATE_INFORMATION, \
     READY_TO_HELP_PHYSICALLY_INFORMATION, READY_TO_HELP_SOCIALLY_INFORMATION, ready_to_help_menu, \
     create_back_to_ready_to_help_reply_markup, send_reply_ready_to_help_menu
+from storage import PostgresSupportStorage
+
+storage = PostgresSupportStorage()
 
 
 def handle_cmd_choice(update: Update, context: CallbackContext) -> None:
     query = update.callback_query
     query.answer()
+
+    if query.data != 'back_to_need_help' or query.data != 'back_to_ready_to_help':
+        storage.insert_user_action(query.from_user.id, None, query.data)
 
     if query.data == 'need_help_where_to_search':
         __send_msg_no_preview_need_help(query.message, 'Ресурсы о том, где переселенцам можно найти информацию о помощи: ' + NEED_HELP_INFORMATION_WHERE_TO_SEARCH)

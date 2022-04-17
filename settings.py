@@ -3,6 +3,12 @@ from dotenv import load_dotenv, find_dotenv
 
 load_dotenv(find_dotenv())
 
+
+def get_logging_chat_id() -> int or None:
+    val = os.getenv("LOGGING_CHAT_ID")
+    return int(val) if val is not None else None
+
+
 TELEGRAM_TOKEN = os.getenv("REFUGEE_TELEGRAM_TOKEN")
 if TELEGRAM_TOKEN is None:
     raise Exception("Please setup the .env variable REFUGEE_TELEGRAM_TOKEN.")
@@ -11,10 +17,22 @@ SUPPORT_CHAT_ID = int(os.getenv("SUPPORT_CHAT_ID"))
 if SUPPORT_CHAT_ID is None:
     raise Exception("Please setup the .env variable SUPPORT_CHAT_ID.")
 
-PORT = int(os.environ.get('PORT', '8443'))
-HEROKU_APP_NAME = os.getenv("HEROKU_APP_NAME")
+POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD")
+if POSTGRES_PASSWORD is None:
+    raise Exception("Please setup the .env variable POSTGRES_PASSWORD.")
 
-CONNECT_WITH_OPERATORS_ENABLED = False
+POSTGRES_USER = os.getenv("POSTGRES_USER")
+if POSTGRES_USER is None:
+    raise Exception("Please setup the .env variable POSTGRES_USER.")
+
+POSTGRES_DB = os.getenv("POSTGRES_DB")
+if POSTGRES_DB is None:
+    raise Exception("Please setup the .env variable POSTGRES_DB.")
+
+POSTGRES_HOST = os.getenv("POSTGRES_HOST", "localhost")
+POSTGRES_PORT = int(os.getenv("POSTGRES_PORT", "5432"))
+
+CONNECT_WITH_OPERATORS_ENABLED = True
 
 HELLO_GENERAL_MESSAGE = """
 Добро пожаловать в Швецию!
@@ -36,11 +54,9 @@ NEED_HELP_BTN_TXT = "Мне нужна помощь"
 CONNECT_TO_VOLUNTEER_BTN_TXT = "Связаться с координаторами"
 
 CONNECT_TO_VOLUNTEER_INFORMATION = """
-Нас очень мало, но мы стараемся помогать всем по возможности.
-Убедительная просьба для начала изучить разделы "Хочу помочь" или "Мне нужна помощь",
-возможно там уже будет ответ на ваш вопрос. 
+Добрый день! К сожалению, нас очень мало, но мы очень постараемся вам помочь.
+Убедительная просьба для начала изучить разделы "Мне нужна помощь" и "Хочу помочь",
+возможно там уже есть ответ на ваш вопрос. Если ответа там нет, тогда опишите ваш вопрос 
+как можно подробнее, чтобы наши координаторы смогли сразу ответить. 
+К вопросу можете приложить фотографии и другие файлы.
 """
-
-
-def get_logging_chat_id():
-    return os.getenv("LOGGING_CHAT_ID")

@@ -1,8 +1,13 @@
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import CallbackContext
 
+from storage import PostgresSupportStorage
+
+storage = PostgresSupportStorage()
+
 
 def need_help_menu(update: Update, context: CallbackContext) -> None:
+    storage.insert_user_action(update.message.from_user.id, None, "/need_help")
     send_reply_need_help_menu(update.message)
 
 
