@@ -77,3 +77,42 @@ Then you can run the bot. Don't forget to create .env file in the root folder wi
     If you do update of the telegram bot, build will take several seconds only.
     The postgres container won't even be re-created it would keep running.
     ---
+
+### How to use the bot if you are a support team member
+
+
+- All messages from users who applied with a question via bot are appearing in the support chat. 
+You reply to this message via "Reply", then the user receives your answer ANONYMOUSLY 
+in his chat with the bot (on behalf of the bot). If the user has permission in the telegram settings 
+(Settings/Privacy and Security/Who can add a link to my account when forwarding my messages?), 
+then a link to the user's profile will be available in the support chat. 
+In case this setting is disabled for a user, you will only be able to see his name.
+
+- You can create as many support chats as you like. 
+To do this, you need to create a group (New group), then add a bot there and send 
+a command in the message: /oncall. Then this group will be added to the list of 
+active bot groups where questions from users will come. Any of the coordinators 
+can be added to this group (who has more competence on issues), 
+any of the group can answer users' questions.
+
+- In order for messages to stop coming to your group, 
+you must send the following command in the message: /offcall. 
+There is a pre-created default support group that cannot be disabled 
+from messages with the /offcall command.
+
+- Messages from users will arrive randomly in one of the chats from the active list 
+(default chat + all chats added by the /oncall command). 
+At the same time, if the user sent messages and got into one of the chats, 
+he would already be "glued" to it, and all his subsequent messages would only come there.
+
+- If at some point the chat is turned off with the /offcall command, 
+then the next message from the user will go to the next random chat 
+and the previous correspondence with this user will be lost. 
+This is a shortcoming of the current solution. For the time being, 
+it is proposed to give this to the coordinator, i.e. 
+they will need to try not to close their chats if they have open questions. 
+In the future, this shortcoming will be improved.
+
+- The default chat will be the largest load, 
+it is suggested to start with only this chat for now, 
+perhaps this will be enough. If there are too many messages, then additional chats can be created.
