@@ -10,8 +10,11 @@ from ready_to_help import ready_to_help_menu
 from settings import TELEGRAM_TOKEN, HELLO_GENERAL_MESSAGE, READY_TO_HELP_BTN_TXT, NEED_HELP_BTN_TXT, \
     CONNECT_TO_VOLUNTEER_INFORMATION, CONNECT_TO_VOLUNTEER_BTN_TXT, \
     REPLY_TO_THIS_MESSAGE_TXT, WRONG_REPLY_TXT, CONNECT_WITH_OPERATORS_ENABLED, HELLO_CONNECT_MESSAGE, \
-    get_logging_chat_id, SUPPORT_CHAT_ID
+    get_logging_chat_id, SUPPORT_CHAT_ID, get_passphrase
 from storage import InMemSupportStorage, PostgresSupportStorage
+
+AUTH_CMD_PREFIX_LENGTH = 5
+AUTH_CMD_REGEXP = r'^(auth [^\s-]+)$'
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO
@@ -49,25 +52,56 @@ def start(update: Update, context: CallbackContext) -> None:
     __log_info(f'/start is called. user_id: {user_id}', user_id, None, context)
 
 
+def authorize(update: Update, context: CallbackContext) -> None:
+    user_id = update.message.from_user.id
+    msg = update.message.text
+
+    passphrase = get_passphrase()
+
+    if passphrase is None:
+        __log_info(f"/authorize is called. passphrase is not set, can't authorize",
+                   user_id, None, context)
+        update.message.reply_text("Permission denied")
+    elif passphrase == msg[AUTH_CMD_PREFIX_LENGTH:]:
+        __log_info(f"/authorize is called. passphrase matched, authorizing",
+                   user_id, None, context)
+        storage.insert_authorized_user(user_id)
+        update.message.reply_text(f'you are authorized now!')
+    else:
+        __log_info(f"/authorize is called. passphrase not matched, can't authorize",
+                   user_id, None, context)
+        update.message.reply_text(f'you are not authorized')
+
+
 def on_call(update: Update, context: CallbackContext) -> None:
     chat_id = update.message.chat_id
     user_id = update.message.from_user.id
-    storage.add_chat(chat_id)
-    storage.insert_user_action(user_id, chat_id, "/on-call")
-    update.message.reply_text(f'the chat is on-call. Active chats: {storage.get_active_chats()}')
-    __log_info(f'/oncall is called. chat_id: {chat_id}', user_id, chat_id, context)
+
+    if not storage.is_user_authorized(user_id):
+        __log_info(f'/oncall is called (unauthorized). chat_id: {chat_id}', user_id, chat_id, context)
+        update.message.reply_text("Permission denied")
+    else:
+        storage.add_chat(chat_id)
+        storage.insert_user_action(user_id, chat_id, "/on-call")
+        update.message.reply_text(f'the chat is on-call. Active chats: {storage.get_active_chats()}')
+        __log_info(f'/oncall is called. chat_id: {chat_id}', user_id, chat_id, context)
 
 
 def off_call(update: Update, context: CallbackContext) -> None:
-    chat_id = update.message.chat_id
     user_id = update.message.from_user.id
-    was_removed = storage.remove_chat(chat_id)
-    msg = 'The chat is off-call.'
-    if not was_removed:
-        msg = "The chat is default and can't be removed from on-call."
-    storage.insert_user_action(user_id, chat_id, "/off-call")
-    update.message.reply_text(msg + f" Active chats: {storage.get_active_chats()}")
-    __log_info(f'/offcall is called. chat_id: {chat_id}', user_id, chat_id, context)
+    chat_id = update.message.chat_id
+
+    if not storage.is_user_authorized(user_id):
+        __log_info(f'/offcall is called (unauthorized). chat_id: {chat_id}', user_id, chat_id, context)
+        update.message.reply_text("Permission denied")
+    else:
+        was_removed = storage.remove_chat(chat_id)
+        msg = 'The chat is off-call.'
+        if not was_removed:
+            msg = "The chat is default and can't be removed from on-call."
+        storage.insert_user_action(user_id, chat_id, "/off-call")
+        update.message.reply_text(msg + f" Active chats: {storage.get_active_chats()}")
+        __log_info(f'/offcall is called. chat_id: {chat_id}', user_id, chat_id, context)
 
 
 def connect_with_operators(update: Update, context: CallbackContext) -> None:
@@ -161,6 +195,7 @@ updater = Updater(TELEGRAM_TOKEN)
 
 updater.dispatcher.add_handler(CallbackQueryHandler(handle_cmd_choice))
 updater.dispatcher.add_handler(CommandHandler('start', start))
+updater.dispatcher.add_handler(MessageHandler(Filters.regex(AUTH_CMD_REGEXP), authorize))
 updater.dispatcher.add_handler(MessageHandler(Filters.regex('^(' + NEED_HELP_BTN_TXT + ')$'), need_help_menu))
 updater.dispatcher.add_handler(MessageHandler(Filters.regex('^(' + READY_TO_HELP_BTN_TXT + ')$'), ready_to_help_menu))
 

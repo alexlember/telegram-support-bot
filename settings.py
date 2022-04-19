@@ -9,6 +9,10 @@ def get_logging_chat_id() -> int or None:
     return int(val) if val is not None else None
 
 
+def get_passphrase() -> str or None:
+    return os.getenv("PASSPHRASE")
+
+
 TELEGRAM_TOKEN = os.getenv("REFUGEE_TELEGRAM_TOKEN")
 if TELEGRAM_TOKEN is None:
     raise Exception("Please setup the .env variable REFUGEE_TELEGRAM_TOKEN.")

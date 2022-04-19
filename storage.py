@@ -71,6 +71,16 @@ class SupportStorageInterface(abc.ABC):
         """Insert user business action to the storage"""
         pass
 
+    @abc.abstractmethod
+    def insert_authorized_user(self, user_id: int):
+        """Insert user to the authorized table"""
+        pass
+
+    @abc.abstractmethod
+    def is_user_authorized(self, user_id: int) -> bool:
+        """Checks if the user is authorized"""
+        pass
+
 
 class InMemSupportStorage(SupportStorageInterface, ABC):
     def __init__(self):
@@ -138,6 +148,12 @@ class InMemSupportStorage(SupportStorageInterface, ABC):
 
     def insert_user_action(self, user_id: int, chat_id: int or None, action: str):
         pass
+
+    def insert_authorized_user(self, user_id: int):
+        pass
+
+    def is_user_authorized(self, user_id: int) -> bool:
+        return True
 ###
 
 
@@ -162,6 +178,11 @@ def insert_user_id_to_chat_id_mapping(user_id: int, chat_id: int):
     transaction("insert_user_id_to_chat_id.sql", [user_id, chat_id])
 
 
+def insert_authorized_user(user_id: int):
+    logger.info(f'insert_authorized_user. user_id: {user_id}')
+    transaction("insert_authorized_user.sql", [user_id])
+
+
 def remove_active_chat(chat_id: int):
     logger.info(f'delete from active_chats. id: {chat_id}')
     transaction("remove_active_chat_by_id.sql", [chat_id])
@@ -172,6 +193,13 @@ def is_chat_active(chat_id: int) -> bool:
     active_chat = select_single("get_active_chat_by_id.sql", [chat_id])
     logger.info(f"active_chat: {active_chat}")
     return active_chat is not None
+
+
+def is_user_authorized(user_id: int) -> bool:
+    logger.info(f'is_user_authorized. id: {user_id}')
+    user = select_single("get_authorized_user_by_id.sql", [user_id])
+    logger.info(f"authorized user: {user}")
+    return user is not None
 
 
 def get_active_chat_randomly() -> int:
@@ -375,3 +403,18 @@ class PostgresSupportStorage(SupportStorageInterface, ABC):
             err_msg = f"error during insert_user_action. user_id: {user_id}, action: {action}"
             try_log_to_db(err_msg, e, user_id, chat_id)
 
+    def insert_authorized_user(self, user_id: int):
+        try:
+            insert_authorized_user(user_id)
+        except Exception as e:
+            err_msg = f"error during insert_authorized_user. user_id: {user_id}"
+            try_log_to_db(err_msg, e, user_id, None)
+        pass
+
+    def is_user_authorized(self, user_id: int) -> bool:
+        try:
+            return is_user_authorized(user_id)
+        except Exception as e:
+            err_msg = f"error during is_user_authorized. user_id: {user_id}"
+            try_log_to_db(err_msg, e, user_id, None)
+            return False
