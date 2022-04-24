@@ -116,3 +116,24 @@ In the future, this shortcoming will be improved.
 - The default chat will be the largest load, 
 it is suggested to start with only this chat for now, 
 perhaps this will be enough. If there are too many messages, then additional chats can be created.
+
+ENV VARIABLES
+
+path: project_classpath/../env/
+
+1) postgres_env_vars.env
+
+    POSTGRES_PASSWORD=fill db password here
+    POSTGRES_USER=fill db user here
+    POSTGRES_DB=fill db name here
+    POSTGRES_HOST:db
+    POSTGRES_PORT:5432
+
+2) telegram_env_vars.env
+
+    REFUGEE_TELEGRAM_TOKEN=fill chat_id here
+    SUPPORT_CHAT_ID=fill chat_id here (with minus in front included)
+    LOGGING_CHAT_ID=fill chat_id here (with minus in front included)
+    PASSPHRASE=fill password here
+    SUPERUSERS=user_id1 user_id2 user_id3
+    CONNECT_WITH_OPERATORS_ENABLED=True

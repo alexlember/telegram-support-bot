@@ -13,7 +13,7 @@ def get_passphrase() -> str or None:
     return os.getenv("PASSPHRASE")
 
 def get_superusers() -> list:
-    return list(map(lambda x: int(x), os.getenv("SUPERUSERS", "13232344 34556654 34423424 224823566").split()))
+    return list(map(lambda x: int(x), os.getenv("SUPERUSERS").split()))
 
 TELEGRAM_TOKEN = os.getenv("REFUGEE_TELEGRAM_TOKEN")
 if TELEGRAM_TOKEN is None:

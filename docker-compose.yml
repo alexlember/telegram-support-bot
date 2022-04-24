@@ -3,7 +3,7 @@ services:
   db:
     image: postgres
     env_file:
-      - 'postgres_env_vars.env'
+      - '../env/postgres_env_vars.env'
     volumes:
       - ~/postgres-space/pgdata:/var/lib/postgresql/data
     ports:
@@ -11,8 +11,8 @@ services:
   telegram-bot:
     image: python:latest
     env_file:
-      - 'postgres_env_vars.env'
-      - 'telegram_env_vars.env'
+      - '../env/postgres_env_vars.env'
+      - '../env/telegram_env_vars.env'
     build: .
     depends_on:
       - "db"
