@@ -188,6 +188,16 @@ def remove_active_chat(chat_id: int):
     transaction("remove_active_chat_by_id.sql", [chat_id])
 
 
+def remove_all_active_chats(exception_chat_id: int):
+    logger.info(f'remove_all_active_chats. exception id: {exception_chat_id}')
+    transaction("remove_all_active_chats_except_id.sql", [exception_chat_id])
+
+
+def remove_all_auth_users():
+    logger.info('remove_all_auth_users')
+    transaction("remove_all_auth_users.sql")
+
+
 def is_chat_active(chat_id: int) -> bool:
     logger.info(f'get_active_chat. id: {chat_id}')
     active_chat = select_single("get_active_chat_by_id.sql", [chat_id])
@@ -337,6 +347,21 @@ class PostgresSupportStorage(SupportStorageInterface, ABC):
         except Exception as e:
             try_log_to_db("remove_chat error", e, None, chat_id)
             return False
+
+    def remove_all_active_except_default(self, chat_id: int):
+        try:
+            active_chats_to_drop = list(set(get_all_active_chats()) - set([SUPPORT_CHAT_ID]))
+            remove_all_active_chats(SUPPORT_CHAT_ID)
+            self.group_filter.remove_chat_ids(active_chats_to_drop)
+        except Exception as e:
+            try_log_to_db("remove_all_active_except_default error", e, None, chat_id)
+
+    @staticmethod
+    def unauthorize_all():
+        try:
+            remove_all_auth_users()
+        except Exception as e:
+            try_log_to_db("unauthorize_all error", e, None, None)
 
     def link_user2chat(self, user_id: int, chat_id: int):
         try:

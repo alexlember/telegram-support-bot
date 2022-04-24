@@ -12,6 +12,8 @@ def get_logging_chat_id() -> int or None:
 def get_passphrase() -> str or None:
     return os.getenv("PASSPHRASE")
 
+def get_superusers() -> list:
+    return list(map(lambda x: int(x), os.getenv("SUPERUSERS", "13232344 34556654 34423424 224823566").split()))
 
 TELEGRAM_TOKEN = os.getenv("REFUGEE_TELEGRAM_TOKEN")
 if TELEGRAM_TOKEN is None:
@@ -36,13 +38,12 @@ if POSTGRES_DB is None:
 POSTGRES_HOST = os.getenv("POSTGRES_HOST", "localhost")
 POSTGRES_PORT = int(os.getenv("POSTGRES_PORT", "5432"))
 
-CONNECT_WITH_OPERATORS_ENABLED = True
+CONNECT_WITH_OPERATORS_ENABLED = bool(os.getenv("CONNECT_WITH_OPERATORS_ENABLED", "True"))
 
 HELLO_GENERAL_MESSAGE = """
 Добро пожаловать в Швецию!
-Полезная информация для собирающихся или приехавших в Швецию с Украины, а также для тех, кто хотел бы помочь. 
-Информация упорядочена по разделам. Изучайте, нажимая на нужные кнопки. 
-Скоро появится функция прямой связи с волонтерами. 
+Полезная информация для собирающихся или приехавших в Швецию из Украины, а также для тех, кто хотел бы помочь. 
+Информация упорядочена по разделам. Изучайте, нажимая на нужные кнопки.
 """
 
 HELLO_CONNECT_MESSAGE = """

@@ -4,6 +4,7 @@ from telegram import Update, KeyboardButton, ReplyKeyboardMarkup
 from telegram.ext import Updater, CommandHandler, CallbackContext, CallbackQueryHandler, \
     MessageHandler, Filters
 
+import settings
 from help_cmd_handler import handle_cmd_choice
 from need_help import need_help_menu
 from ready_to_help import ready_to_help_menu
@@ -102,6 +103,35 @@ def off_call(update: Update, context: CallbackContext) -> None:
         storage.insert_user_action(user_id, chat_id, "/off-call")
         update.message.reply_text(msg + f" Active chats: {storage.get_active_chats()}")
         __log_info(f'/offcall is called. chat_id: {chat_id}', user_id, chat_id, context)
+
+
+def off_call_all(update: Update, context: CallbackContext) -> None:
+    user_id = update.message.from_user.id
+    chat_id = update.message.chat_id
+
+    if user_id not in settings.get_superusers():
+        __log_info(f'/offcalla is called (unauthorized). chat_id: {chat_id}', user_id, chat_id, context)
+        update.message.reply_text("Permission denied")
+    else:
+        storage.remove_all_active_except_default(chat_id)
+        storage.insert_user_action(user_id, chat_id, "/offcalla")
+        update.message.reply_text("All chats except default are removed from on-call Active chats: "
+                                  f"{storage.get_active_chats()}")
+        __log_info(f'/offcalla is called. chat_id: {chat_id}', user_id, chat_id, context)
+
+
+def unauth_all(update: Update, context: CallbackContext) -> None:
+    user_id = update.message.from_user.id
+    chat_id = update.message.chat_id
+
+    if user_id not in settings.get_superusers():
+        __log_info(f'/unautha is called (unauthorized). chat_id: {chat_id}', user_id, chat_id, context)
+        update.message.reply_text("Permission denied")
+    else:
+        storage.unauthorize_all()
+        storage.insert_user_action(user_id, chat_id, "/unautha")
+        update.message.reply_text("All users are unauthorised. Please auth again")
+        __log_info(f'/unautha is called. chat_id: {chat_id}', user_id, chat_id, context)
 
 
 def connect_with_operators(update: Update, context: CallbackContext) -> None:
@@ -204,6 +234,8 @@ if CONNECT_WITH_OPERATORS_ENABLED:
                                                   connect_with_operators))
     updater.dispatcher.add_handler(CommandHandler('oncall', on_call))
     updater.dispatcher.add_handler(CommandHandler('offcall', off_call))
+    updater.dispatcher.add_handler(CommandHandler('offcalla', off_call_all))
+    updater.dispatcher.add_handler(CommandHandler('unautha', unauth_all))
 
     updater.dispatcher.add_handler(MessageHandler(Filters.chat_type.private, forward_to_support_chat))
     updater.dispatcher.add_handler(MessageHandler(storage.get_chat_filter() & Filters.reply,
